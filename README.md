@@ -1,7 +1,7 @@
 # CodeRisk Engine
 
 Machine-Learned Vulnerability Detection, Threat Screening, and Future Risk Assessment for Source Code.
-[![CodeRisk Engine Demo](docs/assets/CodeRiskEngine.png)](https://youtu.be/EKKx0IaIZkc) 
+[![CodeRisk Engine Demo](https://youtu.be/EKKx0IaIZkc) 
 
 ---
 
