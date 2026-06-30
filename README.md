@@ -3,9 +3,10 @@
 Machine-Learned Vulnerability Detection, Threat Screening, and Future Risk Assessment for Source Code.
 
 
-[![CodeRisk Engine Demo](docs/assets/thumbnail.png)](https://youtu.be/EKKx0IaIZkc) 
+[![CodeRisk Engine Demo](docs/assets/CodeRiskEngine.png)](https://youtu.be/EKKx0IaIZkc) 
 
 *Click to watch the full walkthrough — ML detection, LLM threat analysis and Risk assessment*
+
 ---
 
 ## Overview
