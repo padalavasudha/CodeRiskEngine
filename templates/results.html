@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CodeRisk Engine Results</title>
+  <style>
+    :root{
+      --bg:#070b18;
+      --panel:rgba(16, 23, 42, 0.95);
+      --panel2:rgba(20, 28, 48, 0.92);
+      --line:rgba(148,163,184,.14);
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --blue:#49b6ff;
+      --blue2:#5ea8ff;
+      --shadow:0 28px 90px rgba(0,0,0,.45);
+      --radius:28px;
+      --red:#ef4444;
+      --amber:#f59e0b;
+      --green:#22c55e;
+      --purple:#8b5cf6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(73,182,255,.10), transparent 24%),
+        radial-gradient(circle at 82% 82%, rgba(94,168,255,.08), transparent 22%),
+        linear-gradient(180deg, #060914 0%, #070b18 100%);
+    }
+
+    .window{
+      width:min(1500px, 98vw);
+      height:min(92vh, 94vh);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(15,23,42,.95), rgba(11,16,32,.94));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      backdrop-filter: blur(18px);
+    }
+
+    .titlebar{
+      height:64px;
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:0 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(15,23,42,.45);
+      flex:0 0 auto;
+    }
+
+    .lights{ display:flex; gap:8px; }
+    .light{ width:12px; height:12px; border-radius:50%; }
+    .red{ background:#ff5f57; }
+    .yellow{ background:#febc2e; }
+    .green{ background:#28c840; }
+
+    .appname{
+      font-weight:700;
+      color:#dbeafe;
+    }
+
+    .content{
+      padding:22px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      flex:1;
+      overflow:hidden;
+    }
+
+    .top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      flex-wrap:wrap;
+    }
+
+    .top h1{
+      margin:0;
+      font-size:38px;
+      line-height:1;
+      letter-spacing:-0.06em;
+    }
+
+    .top p{
+      margin:12px 0 0;
+      color:var(--muted);
+      line-height:1.55;
+      max-width:760px;
+    }
+
+    .buttons{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .btn{
+      min-width:170px;
+      height:44px;
+      padding:0 18px;
+      border-radius:14px;
+      border:0;
+      font-weight:700;
+      font-size:15px;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      transition:transform .15s ease, opacity .15s ease, background .15s ease;
+    }
+
+    .btn:hover{ transform:translateY(-1px); }
+
+    .btn-primary{
+      background:linear-gradient(135deg, var(--blue), var(--blue2));
+      color:#07111f;
+      box-shadow:0 10px 24px rgba(73,182,255,.18);
+    }
+
+    .btn-secondary{
+      background:rgba(148,163,184,.12);
+      color:#e5e7eb;
+      border:1px solid rgba(148,163,184,.18);
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0, 1fr));
+      gap:8px;
+      flex:0 0 auto;
+    }
+
+    .stat{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:var(--panel2);
+      padding:12px 12px 10px;
+      min-height:84px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      overflow:hidden;
+    }
+
+    .stat-left{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      min-width:0;
+    }
+
+    .stat-icon{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      box-shadow:0 10px 20px rgba(0,0,0,.10);
+    }
+
+    .icon-blue{ background:linear-gradient(135deg, #3b82f6, #2563eb); }
+    .icon-purple{ background:linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .icon-red{ background:linear-gradient(135deg, #f87171, #ef4444); }
+    .icon-amber{ background:linear-gradient(135deg, #fbbf24, #f59e0b); }
+    .icon-green{ background:linear-gradient(135deg, #4ade80, #22c55e); }
+
+    .stat-copy{
+      min-width:0;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+
+    .stat-value{
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:-0.04em;
+      line-height:1;
+    }
+
+    .stat-sub{
+      margin-top:5px;
+      color:#cbd5e1;
+      font-size:11px;
+      line-height:1.15;
+    }
+
+    .stat-right{
+      width:78px;
+      flex:0 0 auto;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      justify-content:flex-end;
+      gap:4px;
+      min-width:78px;
+    }
+
+    .percent{
+      color:#cbd5e1;
+      font-size:11px;
+      text-align:right;
+      line-height:1.1;
+    }
+
+    .spark{
+      width:78px;
+      height:24px;
+      display:block;
+    }
+
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      color:#cbd5e1;
+      font-size:14px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-top:2px;
+      flex:0 0 auto;
+    }
+
+    .sort-pill{
+      border:1px solid rgba(148,163,184,.16);
+      background:rgba(148,163,184,.08);
+      color:#dbeafe;
+      border-radius:999px;
+      padding:8px 12px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .results{
+      flex:1;
+      overflow-y:auto;
+      padding-right:6px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      max-height:calc(100vh - 300px);
+    }
+
+    .file-card{
+      border:1px solid var(--line);
+      border-radius:20px;
+      background:var(--panel2);
+      padding:14px 16px;
+    }
+
+    .file-row{
+      display:grid;
+      grid-template-columns: 1.8fr 0.7fr 1fr auto;
+      gap:12px;
+      align-items:center;
+    }
+
+    .file-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .file-icon{
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      color:white;
+      font-size:18px;
+      font-weight:900;
+      flex:0 0 auto;
+      box-shadow:0 10px 24px rgba(0,0,0,.14);
+      letter-spacing:.03em;
+    }
+
+    .file-name{
+      font-size:17px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+      color:#f8fafc;
+      word-break:break-word;
+      margin-bottom:4px;
+    }
+
+    .ext-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(59,130,246,.14);
+      border:1px solid rgba(59,130,246,.18);
+      color:#93c5fd;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.06em;
+    }
+
+    .metric-block{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+    }
+
+    .metric-label{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .metric-value{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:-0.03em;
+    }
+
+    .severity-line{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:5px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      width:fit-content;
+      letter-spacing:.03em;
+    }
+
+    .high{ background:rgba(239,68,68,.18); color:#fca5a5; }
+    .medium{ background:rgba(245,158,11,.18); color:#fcd34d; }
+    .low{ background:rgba(34,197,94,.18); color:#86efac; }
+
+    .avg{
+      color:#e5e7eb;
+      font-weight:800;
+      font-size:15px;
+      line-height:1.2;
+    }
+
+    .avg-label{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+
+    .sparkline{
+      width:100%;
+      max-width:96px;
+      height:34px;
+      display:block;
+    }
+
+    .action-btn{
+      min-width:118px;
+      height:40px;
+      border-radius:12px;
+      border:1px solid rgba(148,163,184,.18);
+      background:rgba(148,163,184,.10);
+      color:#e5e7eb;
+      font-weight:700;
+      cursor:pointer;
+      padding:0 14px;
+    }
+
+    .action-btn:hover{
+      background:rgba(148,163,184,.16);
+    }
+
+    .action-dash{
+      min-width:118px;
+      height:40px;
+      display:grid;
+      place-items:center;
+      color:#64748b;
+      font-weight:700;
+    }
+
+    .hidden-panel{
+      margin-top:12px;
+      border-top:1px solid rgba(148,163,184,.12);
+      padding-top:12px;
+      display:none;
+    }
+
+    .hidden-panel.open{
+      display:block;
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .mini-stat{
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:16px;
+      background:rgba(2,6,23,.24);
+      padding:12px 14px;
+    }
+
+    .mini-stat .k{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+
+    .mini-stat .v{
+      font-size:18px;
+      font-weight:800;
+    }
+
+    .details-shell{
+      margin-top:12px;
+      border-top:1px solid rgba(148,163,184,.12);
+      padding-top:12px;
+    }
+
+    .stage-block{
+      margin-top:10px;
+      padding:10px 12px;
+      border-left:3px solid rgba(73,182,255,.55);
+      background:rgba(2,6,23,.16);
+      border-radius:12px;
+    }
+
+    .stage-block-title{
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#cbd5e1;
+      margin-bottom:8px;
+    }
+
+    .stage-block-safe{
+      color:#86efac;
+      padding:10px 12px;
+      border-radius:12px;
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.16);
+      line-height:1.5;
+    }
+
+    .stage2-panel{
+      margin-top:14px;
+      padding-top:12px;
+      border-top:1px solid rgba(148,163,184,.12);
+    }
+
+    .stage2-title{
+      color:#cbd5e1;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .stage2-finding{
+      border:1px solid rgba(148,163,184,.12);
+      border-radius:16px;
+      background:rgba(2,6,23,.24);
+      padding:12px 14px;
+      margin-bottom:10px;
+    }
+
+    .stage2-head{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+
+    .stage2-name{
+      font-weight:700;
+      color:#f8fafc;
+    }
+
+    .stage2-meta{
+      color:#94a3b8;
+      font-size:12px;
+      margin-bottom:8px;
+    }
+
+    .stage2-text{
+      color:#dbeafe;
+      font-size:13px;
+      line-height:1.45;
+      margin-top:6px;
+    }
+
+    .fix-box{
+      margin-top:12px;
+      border-left:4px solid #22c55e;
+      background:rgba(34,197,94,.08);
+      padding:12px;
+      border-radius:10px;
+    }
+
+    .fix-label{
+      color:#4ade80;
+      font-size:12px;
+      font-weight:700;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+
+    .fix-text{
+      color:#f1f5f9;
+      line-height:1.6;
+    }
+
+    .stage2-safe{
+      color:#4ade80;
+      padding:12px;
+      border-radius:12px;
+      background:rgba(34,197,94,.08);
+      border:1px solid rgba(34,197,94,.18);
+    }
+
+    .finding-preview{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .finding-pill{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.14);
+      background:rgba(2,6,23,.22);
+      color:#cbd5e1;
+      font-size:13px;
+    }
+
+    .summary-foot{
+      color:#64748b;
+      font-size:13px;
+      margin-top:2px;
+      flex:0 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="lights">
+        <div class="light red"></div>
+        <div class="light yellow"></div>
+        <div class="light green"></div>
+      </div>
+      <div class="appname">CodeRisk Engine</div>
+    </div>
+
+    <div class="content">
+      <div class="top">
+        <div>
+          <h1>Results</h1>
+          <p>Machine learning based vulnerability detection,Threat and Risk Assessment</p>
+        </div>
+
+        <div class="buttons">
+          <a class="btn btn-secondary" href="{{ url_for('index') }}">Scan More Files</a>
+          <a class="btn btn-primary" href="{{ url_for('download_report') }}">Download Latest JSON</a>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-left">
+            <div class="stat-icon icon-blue">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M3 7.5C3 6.12 4.12 5 5.5 5H9l2 2h7.5C19.88 7 21 8.12 21 9.5V17c0 1.38-1.12 2.5-2.5 2.5h-13C4.12 19.5 3 18.38 3 17V7.5Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-copy">
+              <div class="stat-label">Files Scanned</div>
+              <div class="stat-value">{{ results.summary.get('total_files', 0) }}</div>
+              <div class="stat-sub">Total files analyzed</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-left">
+            <div class="stat-icon icon-purple">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 3l7 3v5c0 5-3.2 8.7-7 10-3.8-1.3-7-5-7-10V6l7-3Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-copy">
+              <div class="stat-label">ML Findings</div>
+              <div class="stat-value">{{ results.summary.get('ml_findings', results.summary.get('total_vulnerabilities', 0)) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-left">
+            <div class="stat-icon icon-red">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2.8 21 18H3L12 2.8Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 8v5" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="16.7" r="1" fill="white"/>
+              </svg>
+            </div>
+            <div class="stat-copy">
+              <div class="stat-label">Threat Matches</div>
+              <div class="stat-value">{{ results.summary.get('threat_matches', 0) }}</div>
+            </div>
+          </div>
+          <div class="stat-right">
+            <div class="percent">LLM match count</div>
+            <svg class="spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+              <polygon points="0,28 18,24 36,22 54,18 72,12 100,6" fill="rgba(239,68,68,.10)"></polygon>
+              <polyline points="0,28 18,24 36,22 54,18 72,12 100,6"
+                        fill="none" stroke="#ef4444" stroke-width="2.4"
+                        stroke-linecap="round" stroke-linejoin="round"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-left">
+            <div class="stat-icon icon-amber">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 3 21 18H3L12 3Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M12 9v4" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="16.6" r="1" fill="white"/>
+              </svg>
+            </div>
+            <div class="stat-copy">
+              <div class="stat-label">Forecast Risk</div>
+              <div class="stat-value">{{ results.summary.get('forecast_risk', 0) }}</div>
+            </div>
+          </div>
+          <div class="stat-right">
+            <div class="percent">Forecast score</div>
+            <svg class="spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+              <polygon points="0,28 18,26 36,20 54,19 72,13 100,8" fill="rgba(245,158,11,.10)"></polygon>
+              <polyline points="0,28 18,26 36,20 54,19 72,13 100,8"
+                        fill="none" stroke="#f59e0b" stroke-width="2.4"
+                        stroke-linecap="round" stroke-linejoin="round"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-left">
+            <div class="stat-icon icon-green">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="stat-copy">
+              <div class="stat-label">Overall Risk</div>
+              <div class="stat-value">{{ results.summary.get('overall_risk', 0) }}</div>
+              <div class="stat-sub">Aggregated score</div>
+            </div>
+          </div>
+          <div class="stat-right">
+            <div class="percent">Risk score</div>
+            <svg class="spark" viewBox="0 0 100 34" preserveAspectRatio="none" aria-hidden="true">
+              <polygon points="0,26 18,24 36,19 54,18 72,11 100,7" fill="rgba(73,182,255,.10)"></polygon>
+              <polyline points="0,26 18,24 36,19 54,18 72,11 100,7"
+                        fill="none" stroke="#49b6ff" stroke-width="2.4"
+                        stroke-linecap="round" stroke-linejoin="round"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span>Files Overview</span>
+        <span class="sort-pill">Sorted by severity</span>
+      </div>
+
+      <div class="results">
+        {% for file in results.files %}
+          {% set ext = file.file_name.rsplit('.', 1)[-1]|upper if '.' in file.file_name else 'FILE' %}
+          {% set icon_class = 'icon-blue' %}
+          {% if loop.index % 4 == 2 %}{% set icon_class = 'icon-purple' %}{% endif %}
+          {% if loop.index % 4 == 3 %}{% set icon_class = 'icon-green' %}{% endif %}
+          {% if loop.index % 4 == 0 %}{% set icon_class = 'icon-amber' %}{% endif %}
+
+          <div class="file-card">
+            <div class="file-row">
+              <div class="file-left">
+                <div class="file-icon {{ icon_class }}">{{ ext }}</div>
+                <div style="min-width:0;">
+                  <div class="file-name">{{ file.file_name }}</div>
+                  <div class="ext-pill">{{ ext }}</div>
+                </div>
+              </div>
+
+              <div class="metric-block">
+                <div class="metric-label">Findings</div>
+                <div class="metric-value">{{ file.summary.get('findings', file.summary.get('total_findings', 0)) }}</div>
+              </div>
+
+              <div class="metric-block">
+                <div class="metric-label">Severity Mix</div>
+                <div class="severity-line">
+                  <span class="badge high">H {{ file.summary.get('high', 0) }}</span>
+                  <span class="badge medium">M {{ file.summary.get('medium', 0) }}</span>
+                  <span class="badge low">L {{ file.summary.get('low', 0) }}</span>
+                </div>
+              </div>
+
+              <div class="metric-block">
+                <div class="metric-label">Action</div>
+                <button class="action-btn" onclick="togglePanel('panel-{{ loop.index }}', this)">
+                  View Report
+                </button>
+              </div>
+            </div>
+
+            <div class="hidden-panel" id="panel-{{ loop.index }}">
+              <div class="mini-grid">
+                <div class="mini-stat">
+                  <div class="k">ML Scanning Findings</div>
+                  <div class="v">{{ file.stage1.summary.get('findings', 0) }}</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="k">Threat Assessment Findings</div>
+                  <div class="v">{{ file.stage2.summary.get('total_findings', file.stage2.summary.get('findings', 0)) }}</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="k">Risk Assessment</div>
+                  <div class="v">{{ file.stage3.risk_score }}</div>
+                </div>
+              </div>
+
+              <div class="details-shell">
+                <div class="stage-block">
+                  <div class="stage-block-title">Stage 1 · ML Scan</div>
+
+                  {% if file.stage1.summary.get('findings', 0) > 0 %}
+                    <div class="stage2-finding">
+                      <div class="stage2-head">
+                        <span class="badge high">HIGH</span>
+                        <span class="stage2-name">{{ file.file_name }}</span>
+                      </div>
+                      <div class="stage2-text">
+                        {{ file.stage1.summary.get('findings', 0) }} known vulnerability findings detected.
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="stage-block-safe">No known vulnerabilities detected.</div>
+                  {% endif %}
+                </div>
+
+                <div class="stage-block">
+                  <div class="stage-block-title">Stage 2 · Threat Screening</div>
+
+                  {% if file.stage2.get('findings', []) %}
+                    {% for finding in file.stage2.get('findings', []) %}
+                      <div class="stage2-finding">
+                        <div class="stage2-head">
+                          <span class="badge {{ finding.severity|lower }}">{{ finding.severity }}</span>
+                          <span class="stage2-name">{{ finding.title }}</span>
+                        </div>
+
+                        {% if finding.line_no %}
+                          <div class="stage2-meta">Line {{ finding.line_no }}</div>
+                        {% endif %}
+
+                        {% if finding.explanation %}
+                          <div class="stage2-text">{{ finding.explanation }}</div>
+                        {% endif %}
+
+                        {% if finding.mitigation %}
+                          <div class="fix-box">
+                            <div class="fix-label">Fix</div>
+                            <div class="fix-text">{{ finding.mitigation }}</div>
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="stage-block-safe">No semantic security issues detected.</div>
+                  {% endif %}
+                </div>
+
+                <div class="stage-block">
+                  <div class="stage-block-title">Stage 3 · Future Risk</div>
+
+                  {% if file.stage3.get('findings', []) %}
+                    {% for finding in file.stage3.get('findings', []) %}
+                      <div class="stage2-finding">
+                        <div class="stage2-head">
+                          <span class="badge {{ finding.severity|lower }}">{{ finding.severity }}</span>
+                          <span class="stage2-name">{{ finding.title }}</span>
+                        </div>
+
+                        {% if finding.line_no %}
+                          <div class="stage2-meta">Line {{ finding.line_no }}</div>
+                        {% endif %}
+
+                        {% if finding.explanation %}
+                          <div class="stage2-text">{{ finding.explanation }}</div>
+                        {% endif %}
+
+                        {% if finding.mitigation %}
+                          <div class="fix-box">
+                            <div class="fix-label">Recommended Action</div>
+                            <div class="fix-text">{{ finding.mitigation }}</div>
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  {% else %}
+                    <div class="stage-block-safe">
+                      Risk Score: <strong>{{ file.stage3.risk_score }}</strong><br />
+                      Trend: <strong>{{ file.stage3.trend }}</strong><br />
+                      Forecast: {{ file.stage3.forecast }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function togglePanel(id, button) {
+      const panel = document.getElementById(id);
+      const open = panel.classList.toggle('open');
+      button.textContent = open ? 'Hide Report' : 'View Report';
+    }
+  </script>
+</body>
+</html>

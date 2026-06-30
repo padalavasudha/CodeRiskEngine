@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+#dataset
+datasets/
+
+#samples
+/samples
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Uploaded files
+uploads/
+
+# Generated reports
+reports/
+scan_results.json
+
+# Model checkpoints (if you don't want to upload them)
+# Uncomment these if your models are large and hosted elsewhere
+# model.pkl
+# vectorizer.pkl
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
