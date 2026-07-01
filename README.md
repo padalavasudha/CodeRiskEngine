@@ -296,6 +296,8 @@ Stage 3
 
 ## Authors
 
+```bash
 Vasudha Padala 
 Masters in Computer Science
 University of Southern California
+```
